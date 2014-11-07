@@ -148,7 +148,7 @@ class EnolaMVC {
             }
         }        
         if(! $ejecutado){
-			echo 'Any controller map with the actual requirement';
+			throw new Exception('Error Enola MVC' . 'Any controller map with the actual requirement');
         }
     }
 }

@@ -1,13 +1,17 @@
 <?php
+include 'classes/HttpRequest.php';
+include 'classes/Session.php';
 /**
  * 
  * @author Enola
  */
 class EnolaMVC {
 	public $file_config;
+	public $folder_controllers;
 	
-	public function __construct($file_config = NULL){
+	public function __construct($file_config = 'enolamvc.json', $folder_controllers = ''){
 		$this->file_config= $file_config;
+		$this->folder_controllers= $folder_controllers;
 	}
     
     /**
@@ -17,7 +21,7 @@ class EnolaMVC {
         //Cargo la URI segun el servidor - Esta siempre es todo lo que esta despues de www.edunola.com.ar o localhost/
         $uri_actual= $_SERVER['REQUEST_URI'];
         //Analizo la cantidad de partes de la baseurl para poder crear la URI correspondiente para la aplicacion
-        $url_base= explode("/", base_mvc);
+        $url_base= explode("/", $base_mvc);
         $uri_app= "";
         //0= http, 1= //, 2= dominio, >3= una carpeta cualquiera
         if(count($url_base) > 3){
@@ -43,28 +47,28 @@ class EnolaMVC {
         //Mantiene la pos actual para luego empezar a recorrer el mensaje y los parametros
         $pos_actual= 0;
         if(count($partes_uri_actual) >= count($partes_url)){
-            $count_partes_uri_actual= count($partes_uri_actual);
-            //Recorro todas las partes de la uri actual
-            for($i= 0; $i < $count_partes_uri_actual; $i++){            
-                $pos_actual= $i;
-                //Si partes url tiene partes se controla
-                if(count($partes_url) >= ($i + 1)){                
-                    if($partes_url[$i] != $partes_uri_actual[$i]){
-			$mapea= FALSE;
-			break;
-                    }
-                }
-                else{
-                    //Si no tiene mas partes coinciden
-                    $mapea= TRUE;
-                    break;
-                }
-            }
+			$count_partes_uri_actual= count($partes_uri_actual);
+			//Recorro todas las partes de la uri actual
+			for($i= 0; $i < $count_partes_uri_actual; $i++){            
+				$pos_actual= $i;
+				//Si partes url tiene partes se controla
+				if(count($partes_url) >= ($i + 1)){                
+					if($partes_url[$i] != $partes_uri_actual[$i]){
+					$mapea= FALSE;
+					break;
+					}
+				}
+				else{
+					//Si no tiene mas partes coinciden
+					$mapea= TRUE;
+					break;
+				}
+			}
         }
-	else{
+		else{
             //Si es mas grande la url del archivo de configuracion no coinciden
             $mapea= FALSE;
-	}
+		}
         if($mapea){
             //Devuelve la posicion actual de donde termina la coincidencia
             return $pos_actual;
@@ -74,11 +78,10 @@ class EnolaMVC {
         }
     }
     
-    
+    /**
+	 * Ejecucion del MVC
+	 */
     public function control(){        
-        if(! isset($this->file_config)){
-            $this->file_config= 'enolamvc.json';
-        }
         $json_configuration= file_get_contents($this->file_config);
         $config= json_decode($json_configuration, true);
         //Base desde donde trabaja el MVC
@@ -93,12 +96,18 @@ class EnolaMVC {
             $url= $controller['url'];
             $url= trim($url, "/"); 
             $partes_url= explode("/", $url);
+			if($partes_url[0] == ''){
+				$partes_url= array();
+			}
 
             //Saco de la uri actual los parametros
             $uri_explode= explode("?", $uriapp);
             $uri_front= $uri_explode[0];
             //Separo la uri actual
-            $partes_uri_actual= explode("/", $uri_front);        
+            $partes_uri_actual= explode("/", $uri_front);
+			if($partes_uri_actual[0] == ''){
+				$partes_uri_actual= array();
+			}
             //Llama al metodo para ver si mapea
             $mapea= $this->maps_controller($partes_url, $partes_uri_actual);
                         
@@ -107,7 +116,7 @@ class EnolaMVC {
                 $pos_actual= $mapea;
                 //Sacar el nombre del mensaje
                 $mensaje= "";
-                if(count($partes_uri_actual) == count($partes_url)){
+                if(count($partes_uri_actual) == count($partes_url) || count($partes_uri_actual) == 0){
                     $mensaje= 'index';
                 }
                 else{
@@ -115,7 +124,7 @@ class EnolaMVC {
                 }
                 //Consigue la clase del controlador, analiza que contenga el metodo y lo ejecuta pasandole los
                 //parametros correspondiente
-                $dir= PATHAPP . 'source/controllers/' . $controller['class'] . '.php';  //-------------------------------
+                $dir= $this->folder_controllers . '/' . $controller['class'] . '.php';
                 require $dir;
                 $dir= explode("/", $controller['class']);
                 $class= $dir[count($dir) - 1];
@@ -132,11 +141,14 @@ class EnolaMVC {
                     $ejecutado= TRUE;
                     break;
                 }
+				else{
+					unset($controlador);
+				}
                 //Si el mensaje no existe pasa al proximo controlador
             }
         }        
         if(! $ejecutado){
-            general_error('Error Enola MVC', 'Any controller map with the actual requirement');
+			echo 'Any controller map with the actual requirement';
         }
     }
 }

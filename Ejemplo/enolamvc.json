@@ -1,0 +1,10 @@
+{
+    "base_url": "http://localhost/enolamvc/Ejemplo/",
+    
+    "controllers": {
+        "index": {"class": "Index", "url": ""},
+		"blog": {"class": "Blog", "url": "blog"},
+		"admin": {"class": "Prueba", "url": "admin"},
+		"admin-user": {"class": "Prueba", "url": "admin/usuarios"}
+    }
+}

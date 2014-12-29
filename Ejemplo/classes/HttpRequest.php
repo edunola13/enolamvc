@@ -6,7 +6,6 @@ class HttpRequest {
     private static $instancia;    
     public $get_params;
     public $post_params;
-    public $uri_params;
     public $session;
     public $request_method;
     

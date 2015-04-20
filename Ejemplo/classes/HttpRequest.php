@@ -9,18 +9,18 @@ class HttpRequest {
     public $session;
     public $request_method;
     
-    protected function __construct($uri){
-        $this->get_params= clean_vars($_GET);
-        $this->post_params= clean_vars($_POST);
+    protected function __construct(){
+        $this->get_params= $_GET;
+        $this->post_params= $_POST;
         $this->session= new Session();
         $this->request_method= $_SERVER['REQUEST_METHOD'];
     }
     /**
      * Crea una unica instancia y/o devuelve la actual
      */
-    public static function getInstance($uri = NULL){
+    public static function getInstance(){
         if(!self::$instancia instanceof self){
-            self::$instancia = new self($uri);
+            self::$instancia = new self();
         }
         return self::$instancia;
     }    

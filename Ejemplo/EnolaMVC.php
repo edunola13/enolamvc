@@ -137,6 +137,7 @@ class EnolaMVC {
                         $params[]= $partes_uri_actual[$i];
                     }
                     $controlador->params= $params;
+					$controlador->httpRequest= HttpRequest::getInstance();
                     $controlador->$mensaje();
                     $ejecutado= TRUE;
                     break;
